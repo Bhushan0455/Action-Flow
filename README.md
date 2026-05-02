@@ -49,9 +49,9 @@ Built as a clean, explainable MVP to demonstrate product thinking, data interpre
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Excel Workbook (.xlsx)                │
+│                    Excel Workbook (.xlsx)               │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │ Dim_Developers│  │Fact_Jira_    │  │Fact_Pull_    │   │
+│  │ Dim_Developers│  │Fact_Jira_    │  │Fact_Pull_   │   │
 │  │              │  │Issues        │  │Requests      │   │
 │  └──────────────┘  └──────────────┘  └──────────────┘   │
 │  ┌──────────────┐  ┌──────────────┐                     │
@@ -62,24 +62,24 @@ Built as a clean, explainable MVP to demonstrate product thinking, data interpre
                          │ Parsed at server startup
                          ▼
 ┌─────────────────────────────────────────────────────────┐
-│              Node.js + Express Backend                   │
+│              Node.js + Express Backend                  │
 │                                                         │
-│  GET /developers          → List all developers          │
-│  GET /metrics/:devId      → Compute 5 metrics            │
-│  GET /insights/:devId     → Generate insights + actions  │
-│  GET /trend/:devId        → Time-series PR & deploy data │
+│  GET /developers          → List all developers         │
+│  GET /metrics/:devId      → Compute 5 metrics           │
+│  GET /insights/:devId     → Generate insights + actions │
+│  GET /trend/:devId        → Time-series PR & deploy data│
 └────────────────────────┬────────────────────────────────┘
                          │ REST API (JSON)
                          ▼
 ┌─────────────────────────────────────────────────────────┐
-│                React Frontend (Vite)                     │
+│                React Frontend (Vite)                    │
 │                                                         │
-│  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │ MetricsCards │  │InsightsPanel │  │ActionSuggest.│   │
-│  │ (5 cards)   │  │(interpretation)│ │(tagged items)│   │
-│  └─────────────┘  └──────────────┘  └──────────────┘   │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐    │
+│  │ MetricsCards│  │InsightsPanel │  │ActionSuggest │    │
+│  │ (5 cards)   │  │interpretation│  │(tagged items)│    │
+│  └─────────────┘  └──────────────┘  └──────────────┘    │
 │  ┌─────────────────────────────────────────────────┐    │
-│  │            TrendChart (Recharts)                 │    │
+│  │            TrendChart (Recharts)                │    │
 │  └─────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────┘
 ```
