@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-bg-dark: #0f172a;
+  --color-text-dark: #f8fafc;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    @apply bg-[var(--color-bg-dark)] text-[var(--color-text-dark)];
+  }
+}
