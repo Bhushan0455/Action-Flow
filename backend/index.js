@@ -122,72 +122,153 @@ app.get('/metrics/:developerId', (req, res) => {
 });
 
 app.get('/insights/:developerId', (req, res) => {
-  const metrics = calculateMetricsForDev(req.params.developerId);
+  const devId = req.params.developerId;
+  const metrics = calculateMetricsForDev(devId);
+  const dev = developers.find(d => d.developer_id === devId);
+  const devName = dev ? dev.developer_name?.split(' ')[0] : 'This developer';
   
   let insightText = "";
   let rawActions = [];
+  let stepNum = 1;
 
   // 1. Cycle Time Rules
   if (metrics.cycleTime > 4) {
-    insightText += "Cycle time is high, indicating slower task completion. ";
-    rawActions.push({ text: "Break tasks into smaller issues", metric: "Cycle Time" });
+    insightText += `Cycle time is ${metrics.cycleTime} days — tasks are taking longer than expected to move from in-progress to done. `;
+    rawActions.push({
+      step: stepNum++,
+      text: `Break large tickets into smaller, independently shippable units — aim for tasks completable within 2-3 days to reduce the current ${metrics.cycleTime}-day average.`,
+      metric: "Cycle Time"
+    });
+    rawActions.push({
+      step: stepNum++,
+      text: "Identify blockers in the workflow (waiting for review, unclear requirements, context switching) and address the top recurring one this sprint.",
+      metric: "Cycle Time"
+    });
   } else if (metrics.cycleTime >= 2 && metrics.cycleTime <= 4) {
-    insightText += "Cycle time is moderate. ";
+    insightText += `Cycle time is ${metrics.cycleTime} days — within a healthy range but there's room to tighten. `;
+    rawActions.push({
+      step: stepNum++,
+      text: `Cycle time of ${metrics.cycleTime} days is acceptable. Review if any outlier tasks are skewing the average and consider setting a 3-day soft limit per ticket.`,
+      metric: "Cycle Time"
+    });
+  } else if (metrics.cycleTime > 0) {
+    insightText += `Cycle time is ${metrics.cycleTime} days — excellent task throughput. `;
   }
 
-  // 2. PR Throughput Rules
-  if (metrics.prThroughput < 3) {
-    insightText += "PR throughput is low, suggesting delays in merging code. ";
-    rawActions.push({ text: "Improve PR review turnaround time", metric: "PR Throughput" });
-  } else if (metrics.prThroughput > 6) {
-    insightText += "PR throughput is high, indicating good development velocity. ";
-  }
-
-  // 3. Lead Time Rules
+  // 2. Lead Time Rules
   if (metrics.leadTime > 4) {
-    insightText += "Lead time is high, meaning changes take longer to reach production. ";
-    rawActions.push({ text: "Reduce PR size and batch smaller changes", metric: "Lead Time" });
-  } else if (metrics.leadTime < 2) {
-    insightText += "Lead time is efficient. ";
+    insightText += `Lead time is ${metrics.leadTime} days, meaning changes take too long from PR open to production. `;
+    rawActions.push({
+      step: stepNum++,
+      text: `Reduce PR size or ticket scope so feedback arrives faster — the current ${metrics.leadTime}-day lead time suggests PRs may be too large or reviews are delayed.`,
+      metric: "Lead Time"
+    });
+    rawActions.push({
+      step: stepNum++,
+      text: "Separate review delay from deployment delay. If reviews are fast but deployment is slow, focus on CI/CD pipeline improvements instead.",
+      metric: "Lead Time"
+    });
+  } else if (metrics.leadTime >= 2 && metrics.leadTime <= 4) {
+    insightText += `Lead time is ${metrics.leadTime} days — moderate, with potential for improvement. `;
+  } else if (metrics.leadTime > 0) {
+    insightText += `Lead time is ${metrics.leadTime} days — changes are reaching production efficiently. `;
   }
 
-  // 4. Bug Rate Rules (Note: metrics.bugRate is a percentage 0-100)
-  if (metrics.bugRate > 10) { // 10% is 0.1
-    insightText += "High bug rate detected, indicating potential quality issues. ";
-    rawActions.push({ text: "Increase testing and code reviews", metric: "Bug Rate" });
+  // 3. Bug Rate Rules
+  if (metrics.bugRate > 30) {
+    insightText += `Bug rate is ${metrics.bugRate}% — critical quality concern. `;
+    rawActions.push({
+      step: stepNum++,
+      text: `Add one quality safeguard immediately: require at least one unit test per PR, since the ${metrics.bugRate}% bug rate suggests insufficient test coverage.`,
+      metric: "Bug Rate"
+    });
+    rawActions.push({
+      step: stepNum++,
+      text: "Conduct a focused retrospective on the last 3 bugs — identify if they share a root cause (missing tests, unclear specs, or rushed reviews).",
+      metric: "Bug Rate"
+    });
+  } else if (metrics.bugRate > 10) {
+    insightText += `Bug rate is ${metrics.bugRate}% — above the healthy threshold, indicating potential quality gaps. `;
+    rawActions.push({
+      step: stepNum++,
+      text: `Increase code review depth and consider adding automated linting or test coverage gates to reduce the ${metrics.bugRate}% bug rate.`,
+      metric: "Bug Rate"
+    });
   } else if (metrics.bugRate === 0) {
-    insightText += "No bugs reported, indicating strong code quality. ";
+    insightText += "No bugs reported — strong code quality practices in place. ";
+  } else {
+    insightText += `Bug rate is ${metrics.bugRate}% — within acceptable range. `;
+  }
+
+  // 4. PR Throughput Rules
+  if (metrics.prThroughput < 3) {
+    insightText += `PR throughput is ${metrics.prThroughput}/month — development velocity needs attention. `;
+    rawActions.push({
+      step: stepNum++,
+      text: `Improve PR review turnaround time — with only ${metrics.prThroughput} merged PRs per month, consider setting a 24-hour review SLA within the team.`,
+      metric: "PR Throughput"
+    });
+  } else if (metrics.prThroughput > 6) {
+    insightText += `PR throughput is ${metrics.prThroughput}/month — strong development velocity. `;
+  } else {
+    insightText += `PR throughput is ${metrics.prThroughput}/month — steady contribution pace. `;
   }
 
   // 5. Deployment Frequency Rules
   if (metrics.deploymentFrequency < 2) {
-    insightText += "Low deployment frequency suggests large or infrequent releases. ";
-    rawActions.push({ text: "Deploy smaller changes more frequently", metric: "Deploy Freq" });
+    insightText += `Deployment frequency is ${metrics.deploymentFrequency}/month — releases are infrequent, suggesting large batch deployments. `;
+    rawActions.push({
+      step: stepNum++,
+      text: `Deploy smaller increments more frequently — at ${metrics.deploymentFrequency} deployments/month, batch sizes are likely too large, increasing risk per release.`,
+      metric: "Deploy Freq"
+    });
   } else if (metrics.deploymentFrequency > 5) {
-    insightText += "Frequent deployments indicate a healthy CI/CD pipeline. ";
+    insightText += `Deployment frequency is ${metrics.deploymentFrequency}/month — healthy CI/CD cadence. `;
+  } else {
+    insightText += `Deployment frequency is ${metrics.deploymentFrequency}/month — reasonable release cadence. `;
   }
 
-  // 6. Combined Rules
+  // 6. Combined / Pattern Rules
   if (metrics.cycleTime > 4 && metrics.prThroughput < 3) {
-    insightText += "This combination suggests development or review bottlenecks. ";
+    rawActions.push({
+      step: stepNum++,
+      text: "High cycle time combined with low PR throughput signals a bottleneck — investigate whether the constraint is in development speed, review wait times, or task complexity.",
+      metric: "Bottleneck"
+    });
   }
   if (metrics.bugRate > 10 && metrics.deploymentFrequency > 5) {
-    insightText += "Frequent releases with high bugs may indicate rushed deployments. ";
+    rawActions.push({
+      step: stepNum++,
+      text: "Frequent releases with elevated bug rate may indicate rushed deployments — add a pre-deploy checklist or staging validation step before pushing to production.",
+      metric: "Quality Gate"
+    });
+  }
+  if (metrics.leadTime > 4 && metrics.bugRate > 10) {
+    rawActions.push({
+      step: stepNum++,
+      text: "Both lead time and bug rate are elevated — prioritize code review quality over speed. A thorough review now will save debugging time later.",
+      metric: "Trade-off"
+    });
   }
 
-  // Fallback if no rules matched
-  if (!insightText) {
-    insightText = "Your metrics indicate a steady and balanced development workflow.";
-    rawActions.push({ text: "Continue maintaining current practices", metric: "General" });
+  // Fallback if no issues detected
+  if (rawActions.length === 0) {
+    insightText += `${devName}'s metrics indicate a steady and balanced development workflow.`;
+    rawActions.push({
+      step: 1,
+      text: "All metrics are within healthy ranges. Continue maintaining current practices and consider mentoring teammates who may benefit from your workflow.",
+      metric: "General"
+    });
   }
 
   // Deduplicate actions based on text
   const seenActions = new Set();
   const actions = [];
+  let renumbered = 1;
   rawActions.forEach(action => {
     if (!seenActions.has(action.text)) {
       seenActions.add(action.text);
-      actions.push(action);
+      actions.push({ ...action, step: renumbered++ });
     }
   });
 
