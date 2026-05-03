@@ -11,6 +11,8 @@ import {
 } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
+const API_URL = 'https://action-flow-nrak.onrender.com';
+
 const TrendChart = ({ developerId }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +23,7 @@ const TrendChart = ({ developerId }) => {
     const fetchTrend = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:3001/trend/${developerId}`);
+        const res = await fetch(`${API_URL}/trend/${developerId}`);
         if (res.ok) {
           const rawData = await res.json();
           // Transform for recharts: [{ name: "Mon", PRs: 2, Deployments: 1 }]
