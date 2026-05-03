@@ -199,7 +199,7 @@ app.get('/insights/:developerId', (req, res) => {
 
 // A simple route to check if the server is alive
 app.get('/', (req, res) => {
-    res.send('Action Flow API is running successfully!');
+   res.send('Action Flow API is running successfully!');
 });
 
 app.get('/trend/:developerId', (req, res) => {
