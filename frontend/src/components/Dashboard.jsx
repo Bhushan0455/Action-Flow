@@ -12,7 +12,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [developerId, setDeveloperId] = useState('');
 
-  const API_URL = 'http://localhost:3001';
+  const API_URL = 'https://action-flow-nrak.onrender.com';
 
   const fetchDevelopers = async () => {
     try {
