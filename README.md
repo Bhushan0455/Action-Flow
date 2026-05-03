@@ -93,17 +93,8 @@ Built as a clean, explainable MVP to demonstrate product thinking, data interpre
 
 ## 📸 Screenshots
 
-> _Add screenshots of your running dashboard here._
+<img width="1034" height="786" alt="image" src="https://github.com/user-attachments/assets/60d90a9f-424e-4b7f-ba95-b2d9857b3a2b" />
 
-| Dashboard Overview | Developer Switch |
-|---|---|
-| _screenshot_ | _screenshot_ |
-
-| Insight Panel | Trend Chart |
-|---|---|
-| _screenshot_ | _screenshot_ |
-
----
 
 ## ⚡ Installation & Setup
 
