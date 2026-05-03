@@ -11,7 +11,7 @@ app.use(express.json());
 
 // Load and parse Excel
 console.log('Loading Excel data...');
-const excelFilePath = path.join(__dirname, '..', 'intern_assignment_support_pack_dev_only_v3.xlsx');
+const excelFilePath = path.join(__dirname, 'data.xlsx');
 const workbook = xlsx.readFile(excelFilePath);
 
 function sheetToJson(sheetName) {
